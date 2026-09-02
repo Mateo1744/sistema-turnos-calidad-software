@@ -16,7 +16,7 @@ El objetivo es crear una API REST para gestionar:
 * Maven
 * PostgreSQL
 * Git y GitHub
-
+gi
 ## Estado actual
 
 Actualmente el proyecto cuenta con:
