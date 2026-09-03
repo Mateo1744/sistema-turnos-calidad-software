@@ -1,10 +1,18 @@
 package com.calidadsoftware.sistema_turnos.entity;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class Servicio {
 
     private Long id;
+
+    @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
+
+    @NotBlank(message = "La descripción es obligatoria")
     private String descripcion;
+
+    @NotBlank(message = "El estado es obligatorio")
     private String estado;
 
     public Servicio() {

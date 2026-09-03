@@ -5,9 +5,6 @@ plugins {
 
     // Pruebas de mutación con PIT
     id("info.solidsoft.pitest") version "1.19.0"
-
-    // Análisis de calidad con SonarQube
-    id("org.sonarqube") version "7.3.1.8318"
 }
 
 group = "com.calidadsoftware"

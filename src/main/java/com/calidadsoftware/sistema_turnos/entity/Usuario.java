@@ -1,12 +1,20 @@
 package com.calidadsoftware.sistema_turnos.entity;
 
 import com.calidadsoftware.sistema_turnos.enums.TipoUsuario;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 public class Usuario {
 
     private Long id;
+
+    @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
+
+    @NotBlank(message = "El documento es obligatorio")
     private String documento;
+
+    @NotNull(message = "El tipo de usuario es obligatorio")
     private TipoUsuario tipoUsuario;
 
     public Usuario() {
