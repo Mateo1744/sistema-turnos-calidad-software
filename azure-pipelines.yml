@@ -23,11 +23,11 @@ steps:
       java -version
     displayName: "Diagnóstico inicial del agente"
 
-  - script: |
-      echo "=== Verificando Gradle Wrapper ==="
-      dir $(projectDir)
-      dir $(projectDir)\gradlew*
-    displayName: "Verificar archivos Gradle"
+  #- script: |
+   #   echo "=== Verificando Gradle Wrapper ==="
+    #  dir $(projectDir)
+     # dir $(projectDir)\gradlew*
+   # displayName: "Verificar archivos Gradle"
 
   - task: Gradle@2
     displayName: "Build y pruebas unitarias"
