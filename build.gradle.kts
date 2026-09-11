@@ -2,13 +2,13 @@ plugins {
     java
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
-
-    // Pruebas de mutación con PIT
+    id("org.sonarqube") version "6.2.0.5505"
     id("info.solidsoft.pitest") version "1.19.0"
+     
 }
 
 group = "com.calidadsoftware"
-version = "0.0.1-SNAPSHOT"
+version = "1.0-SNAPSHOT"
 
 java {
     toolchain {
@@ -16,110 +16,93 @@ java {
     }
 }
 
+sourceSets {
+    test {
+        resources.srcDir(
+            "src/test/java/com/calidadsoftware/sistema_turnos/resources"
+        )
+    }
+}
+
 repositories {
     mavenCentral()
 }
 
-/*
- * ---------------------------------------------------------
- * SOURCE SET PARA PRUEBAS DE ACEPTACIÓN
- * ---------------------------------------------------------
- */
-
-val acceptanceTestSourceSet = sourceSets.create("acceptanceTest") {
-    java.srcDir("src/acceptanceTest/java")
-    resources.srcDir("src/acceptanceTest/resources")
-
-    compileClasspath += sourceSets["main"].output
-    runtimeClasspath += output + compileClasspath
-}
-
-configurations[acceptanceTestSourceSet.implementationConfigurationName]
-    .extendsFrom(configurations.testImplementation.get())
-
-configurations[acceptanceTestSourceSet.runtimeOnlyConfigurationName]
-    .extendsFrom(configurations.testRuntimeOnly.get())
-
 dependencies {
-    // Spring Boot
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
-    // Pruebas unitarias
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
+    
 
-    // Cucumber para pruebas de aceptación
-    add(
-        acceptanceTestSourceSet.implementationConfigurationName,
-        "io.cucumber:cucumber-java:7.34.7"
-    )
+        // PIT Mutation Testing
+    pitest ("org.pitest:pitest-junit5-plugin:1.19.0")
 
-    // JUnit Platform utilizado por PIT con Spring Boot
-    add(
-        "pitest",
-        "org.junit.platform:junit-platform-launcher:6.0.3"
-    )
+    // Cucumber
+    testImplementation("io.cucumber:cucumber-java:7.34.8")
+    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.34.8")
+    testImplementation("org.junit.platform:junit-platform-suite")
 }
 
-/*
- * ---------------------------------------------------------
- * PRUEBAS UNITARIAS
- * ---------------------------------------------------------
- */
+configurations.named("testRuntimeClasspath") {
+    resolutionStrategy.eachDependency {
+        if (requested.group == "org.junit.platform" &&
+            requested.name == "junit-platform-launcher"
+        ) {
+            useVersion("6.0.3")
+            because("Spring Boot 4.1.1 utiliza JUnit Platform 6.0.3")
+        }
+    }
+}
 
-tasks.withType<Test> {
+tasks.test {
     useJUnitPlatform()
 }
 
-/*
- * ---------------------------------------------------------
- * PRUEBAS DE ACEPTACIÓN - CUCUMBER
- * ---------------------------------------------------------
- */
-
-tasks.register<JavaExec>("acceptanceTest") {
-    description = "Ejecuta las pruebas de aceptación con Cucumber"
+tasks.register<Test>("acceptanceTest") {
+    description = "Runs Cucumber acceptance tests."
     group = "verification"
 
-    dependsOn(acceptanceTestSourceSet.classesTaskName)
+    testClassesDirs = sourceSets["test"].output.classesDirs
+    classpath = sourceSets["test"].runtimeClasspath
 
-    classpath = acceptanceTestSourceSet.runtimeClasspath
-
-    mainClass.set("io.cucumber.core.cli.Main")
-
-    doFirst {
-        layout.buildDirectory
-            .dir("test-results/acceptanceTest")
-            .get()
-            .asFile
-            .mkdirs()
+    useJUnitPlatform {
+        includeEngines("cucumber")
     }
-
-    args(
-        "--plugin", "pretty",
-        "--plugin", "junit:build/test-results/acceptanceTest/TEST-cucumber.xml",
-        "--glue", "com.calidadsoftware",
-        "src/acceptanceTest/resources"
-    )
 }
 
-/*
- * ---------------------------------------------------------
- * PRUEBAS DE MUTACIÓN - PITEST
- * ---------------------------------------------------------
- */
+
+sonar {
+    properties {
+
+        property(
+            "sonar.projectKey",
+            "Sistema-de-Turnos"
+        )
+
+        property(
+            "sonar.projectName",
+            "Sistema de Turnos"
+        )
+
+        property(
+            "sonar.login", 
+            "sqp_52b521d8e18db47ccc1adcf2726e0fbe1fd0f141"
+        )
+
+        property(
+            "sonar.host.url", 
+            "http://localhost:9000"
+        )
+    }
+}
 
 pitest {
-    targetClasses.set(
-        listOf("com.calidadsoftware.*")
-    )
-
-    junit5PluginVersion.set("1.2.3")
-
-    outputFormats.set(
-        listOf("HTML", "XML")
-    )
-
+    pitestVersion.set("1.19.0")
+    junit5PluginVersion.set("1.2.1")
+    targetClasses.set(listOf("com.calidadsoftware.")) // <--- cambia aquí targetTests.set(listOf("org.example.*"))
+    threads.set(4)
+    outputFormats.set(listOf("HTML"))
     timestampedReports.set(false)
 }
