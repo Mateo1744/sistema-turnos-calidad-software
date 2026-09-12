@@ -101,7 +101,7 @@ sonar {
 pitest {
     pitestVersion.set("1.19.0")
     junit5PluginVersion.set("1.2.1")
-    targetClasses.set(listOf("com.calidadsoftware.")) // <--- cambia aquí targetTests.set(listOf("org.example.*"))
+    targetClasses.set(listOf("com.calidadsoftware.sistema_turnos.*")) // <--- cambia aquí targetTests.set(listOf("org.example.*"))
     threads.set(4)
     outputFormats.set(listOf("HTML"))
     timestampedReports.set(false)
