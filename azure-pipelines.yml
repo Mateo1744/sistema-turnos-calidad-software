@@ -4,7 +4,8 @@ trigger:
 pool:
   name: LocalPool   # Tu agente local registrado en Azure DevOps
 
- 
+variables:
+  projectDir: ''
 
 steps:
   # Paso 1: Chequear el código
@@ -13,13 +14,13 @@ steps:
   # Paso 2: Verificar versión de Java instalada en el agente local
   - script: java -version
     displayName: "Verificar versión de Java (usando el del agente local)"
-    workingDirectory: $
+    workingDirectory: $(projectDir)
 
   # Paso 3: Ejecutar compilación y pruebas unitarias
   - task: Gradle@2
     inputs:
-      workingDirectory: '$'
-      gradleWrapperFile: '$gradlew'
+      workingDirectory: '$(projectDir)'
+      gradleWrapperFile: '$(projectDir)/gradlew.bat'
       gradleOptions: '-Dfile.encoding=UTF-8 -Xmx3072m'
       publishJUnitResults: true
       testResultsFiles: '**/build/test-results/test/TEST-*.xml'
