@@ -13,7 +13,7 @@ steps:
   # Paso 2: Verificar versión de Java instalada en el agente local
   - script: java -version
     displayName: "Verificar versión de Java (usando el del agente local)"
-    workingDirectory: $(projectDir)
+    workingDirectory: $
 
   # Paso 3: Ejecutar compilación y pruebas unitarias
   - task: Gradle@2
