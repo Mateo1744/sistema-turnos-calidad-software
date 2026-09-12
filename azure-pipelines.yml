@@ -4,7 +4,6 @@ trigger:
 pool:
   name: LocalPool   # Tu agente local registrado en Azure DevOps
 
-variables:
  
 
 steps:
