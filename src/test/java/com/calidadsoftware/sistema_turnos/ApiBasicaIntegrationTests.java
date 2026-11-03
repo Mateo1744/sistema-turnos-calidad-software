@@ -14,8 +14,22 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest
+@org.springframework.test.context.ActiveProfiles("test")
+@org.springframework.test.annotation.DirtiesContext(
+        classMode = org.springframework.test.annotation.DirtiesContext.ClassMode.BEFORE_CLASS)
 @AutoConfigureMockMvc
+@org.springframework.security.test.context.support.WithMockUser(roles = "ADMIN")
 class ApiBasicaIntegrationTests {
+
+    @Autowired
+    private org.springframework.web.context.WebApplicationContext context;
+
+    @org.junit.jupiter.api.BeforeEach
+    void prepararSeguridad() {
+        mockMvc = org.springframework.test.web.servlet.setup.MockMvcBuilders.webAppContextSetup(context)
+                .defaultRequest(get("/").with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
+                .apply(org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity()).build();
+    }
 
     @Autowired
     private MockMvc mockMvc;

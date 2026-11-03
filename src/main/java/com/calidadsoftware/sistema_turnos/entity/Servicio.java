@@ -1,18 +1,26 @@
 package com.calidadsoftware.sistema_turnos.entity;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "servicios")
 public class Servicio {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @NotBlank(message = "El nombre es obligatorio")
+    @Column(nullable = false)
     private String nombre;
 
     @NotBlank(message = "La descripción es obligatoria")
+    @Column(nullable = false)
     private String descripcion;
 
     @NotBlank(message = "El estado es obligatorio")
+    @Column(nullable = false)
     private String estado;
 
     public Servicio() {

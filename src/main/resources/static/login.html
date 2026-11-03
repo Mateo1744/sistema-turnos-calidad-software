@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="es">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Turno · Iniciar sesión</title><link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/auth.css">
+<script src="/auth.js" defer></script><script src="/login.js" defer></script></head>
+<body class="login-page">
+  <section class="login-story"><a class="brand" href="/"><span class="brand-mark">t.</span> turno<span class="brand-dot">●</span></a>
+    <div><p class="eyebrow">TU TIEMPO CUENTA</p><h1>Menos espera.<br>Mejor atención.</h1><p>Solicita tu turno, consulta su estado y prepárate para ser atendido.</p>
+      <div class="login-steps"><span>01 · Elige tu servicio</span><span>02 · Solicita tu turno</span><span>03 · Sigue tu atención</span></div></div>
+    <small>Sistema de Turnos de Atención</small>
+  </section>
+  <main class="login-main"><div class="login-card">
+    <p class="eyebrow">BIENVENIDO A TURNO</p><h2 id="login-title">Inicia sesión</h2><p id="login-description">Ingresa con tu cuenta para continuar.</p>
+    <p id="login-notice" role="status" hidden></p>
+    <form id="login-form">
+      <div id="registration-fields" hidden>
+        <label class="field">Nombre completo<input name="nombre" autocomplete="name" maxlength="160"></label>
+        <label class="field">Documento<input name="documento" maxlength="160"></label>
+      </div>
+      <label class="field">Nombre de usuario<input name="username" autocomplete="username" required minlength="3" maxlength="50" pattern="[a-zA-Z0-9._-]{3,50}" title="Letras, números, puntos y guiones"></label>
+      <label class="field">Contraseña<input name="password" type="password" autocomplete="current-password" required maxlength="64"></label>
+      <p id="password-help" class="form-help" hidden>Usa entre 12 y 64 caracteres. Tu cuenta será de usuario para solicitar turnos.</p>
+      <p id="login-error" role="alert" hidden></p>
+      <button class="primary login-submit" id="login-submit">Ingresar</button>
+    </form>
+    <div class="login-toggle"><span id="toggle-label">¿Aún no tienes cuenta?</span> <button id="toggle-mode">Regístrate</button></div>
+    <p class="form-help">El personal de atención utiliza la cuenta habilitada por el administrador.</p>
+  </div></main>
+</body></html>

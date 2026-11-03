@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Turno · Centro de atención</title>
+  <link rel="stylesheet" href="/styles.css"><link rel="stylesheet" href="/auth.css"><script src="/auth.js" defer></script><script src="/app.js" defer></script>
+</head>
+<body>
+  <aside class="sidebar">
+    <a class="brand" href="/"><span class="brand-mark">t.</span> turno<span class="brand-dot">●</span></a>
+    <p class="workspace">SISTEMA DE ATENCIÓN</p>
+    <nav aria-label="Menú principal">
+      <button class="nav active" data-view="turnos"><span>◫</span> Centro de turnos</button>
+      <button class="nav" data-view="usuarios"><span>◎</span> Usuarios</button>
+      <button class="nav" data-view="servicios"><span>▦</span> Servicios</button>
+      <button class="nav" data-view="funcionarios"><span>◈</span> Funcionarios</button>
+      <button class="nav" data-view="cuentas"><span>◇</span> Cuentas de acceso</button>
+    </nav>
+    <div class="side-note" aria-hidden="true"></div>
+    <div class="sidebar-footer"><span class="avatar">ST</span><div><span id="account-name">Mi cuenta</span><small id="account-role"></small></div></div>
+  </aside>
+  <main>
+    <header class="topbar"><span>Operaciones <span class="slash">/</span> <strong id="breadcrumb">Centro de turnos</strong></span><div class="topbar-actions"><span id="date"></span><button type="button" id="logout" class="logout-button">Cerrar sesión ↗</button></div></header>
+    <section class="page">
+      <div class="heading"><div><p class="eyebrow">CADA PERSONA, A SU TIEMPO</p><h1 id="title">Centro de turnos</h1><p id="subtitle">Organiza la espera. Haz que la atención fluya.</p></div><button class="primary" id="create">＋ Nuevo turno</button></div>
+      <div id="connection" role="status" hidden></div>
+      <section class="metrics" aria-label="Resumen de turnos">
+        <article><span>Turnos registrados</span><div><strong id="total">—</strong><i>↗</i></div><small>Total registrado</small></article>
+        <article><span>Por atender</span><div><strong id="waiting">—</strong><i class="amber">◷</i></div><small>Generados, en espera y llamados</small></article>
+        <article><span>En atención</span><div><strong id="serving">—</strong><i class="blue">◉</i></div><small>Atención en curso</small></article>
+        <article><span>Finalizados</span><div><strong id="done">—</strong><i>✓</i></div><small>Atenciones completadas</small></article>
+      </section>
+      <section class="panel">
+        <div class="panel-heading"><div><h2 id="list-title">Cola de atención</h2><p id="list-description">Una vista clara de cada paso del proceso.</p></div><button class="secondary" id="refresh">↻ Actualizar</button></div>
+        <div class="toolbar"><label class="search"><span>⌕</span><input id="search" type="search" placeholder="Buscar por número o usuario…" aria-label="Buscar registros"></label><select id="filter" aria-label="Filtrar por estado"><option value="">Todos los estados</option><option>GENERADO</option><option>EN_ESPERA</option><option>LLAMADO</option><option>EN_ATENCION</option><option>FINALIZADO</option><option>CANCELADO</option></select><span class="result-count" id="count"></span></div>
+        <div id="content" aria-live="polite"><div class="empty">Cargando tu espacio de trabajo…</div></div>
+        <div class="panel-footer"><span><span class="live-dot"></span> Datos de tu API</span><span id="updated">Esperando conexión</span></div>
+      </section>
+      <footer class="page-footer"><span>Hecho para una atención más ordenada.</span><span>Turno / Sistema de Turnos de Atención</span></footer>
+    </section>
+  </main>
+  <dialog id="dialog"><form id="form"><div class="dialog-heading"><div><p class="eyebrow">CENTRO DE ATENCIÓN</p><h2 id="dialog-title"></h2></div><button type="button" class="close" id="close" aria-label="Cerrar">×</button></div><div id="fields"></div><p id="form-error" role="alert" hidden></p><div class="dialog-actions"><button type="button" class="secondary" id="cancel">Cancelar</button><button class="primary" id="submit" type="submit">Guardar</button></div></form></dialog>
+  <div id="toast" role="status" hidden></div>
+</body></html>

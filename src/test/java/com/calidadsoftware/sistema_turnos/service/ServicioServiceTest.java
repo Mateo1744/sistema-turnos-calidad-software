@@ -11,7 +11,15 @@ class ServicioServiceTest {
 
     @Test
     void creaServicio() {
-        ServicioService servicioService = new ServicioService();
+        var repository = org.mockito.Mockito.mock(
+                com.calidadsoftware.sistema_turnos.repository.ServicioRepository.class);
+        org.mockito.Mockito.when(repository.saveAndFlush(org.mockito.ArgumentMatchers.any(Servicio.class)))
+                .thenAnswer(invocacion -> {
+                    Servicio guardado = invocacion.getArgument(0);
+                    guardado.setId(1L);
+                    return guardado;
+                });
+        ServicioService servicioService = new ServicioService(repository);
         Servicio servicio = new Servicio(null, "Pagos", "Pago de facturas", "activo");
 
         Servicio servicioCreado = servicioService.registrar(servicio);

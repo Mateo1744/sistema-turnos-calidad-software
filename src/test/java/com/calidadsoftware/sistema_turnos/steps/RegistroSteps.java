@@ -15,8 +15,26 @@ import io.cucumber.java.es.Entonces;
 
 public class RegistroSteps {
 
-    private final UsuarioService usuarioService = new UsuarioService();
-    private final ServicioService servicioService = new ServicioService();
+    private org.springframework.context.ConfigurableApplicationContext context;
+    private UsuarioService usuarioService;
+    private ServicioService servicioService;
+
+    @io.cucumber.java.Before
+    public void iniciarBaseDePruebas() {
+        context = new org.springframework.boot.builder.SpringApplicationBuilder(
+                com.calidadsoftware.sistema_turnos.SistemaTurnosApplication.class)
+                .web(org.springframework.boot.WebApplicationType.NONE)
+                .profiles("test")
+                .run("--spring.datasource.url=jdbc:h2:mem:cucumber_" + java.util.UUID.randomUUID()
+                        + ";MODE=PostgreSQL;DB_CLOSE_DELAY=-1");
+        usuarioService = context.getBean(UsuarioService.class);
+        servicioService = context.getBean(ServicioService.class);
+    }
+
+    @io.cucumber.java.After
+    public void cerrarBaseDePruebas() {
+        if (context != null) context.close();
+    }
 
     private Usuario usuarioPorRegistrar;
     private Usuario usuarioRegistrado;

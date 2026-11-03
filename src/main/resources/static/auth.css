@@ -1,0 +1,24 @@
+[hidden]{display:none!important}
+.checking-session>aside,.checking-session>main{visibility:hidden}
+#login-notice{padding:12px 14px;background:#eaf4ee;color:#246a53;border-radius:7px;font-size:12px;line-height:1.6}
+.logout{display:block;border:0;background:transparent;color:#247b65;padding:9px 0 0;font-size:12px;text-align:left}
+.topbar-actions{display:flex;gap:20px;align-items:center}
+.topbar{position:sticky;top:0;z-index:5;background:#fff}
+.logout-button{border:1px solid #cbdcd2;color:#246a53;background:#f1f7f2;border-radius:7px;padding:10px 14px;font-weight:600;white-space:nowrap}
+.logout-button:hover{background:#e3efe6}
+@media(max-width:760px){.topbar-actions{gap:8px}.logout-button{font-size:11px;padding:9px}.topbar{gap:10px}.topbar>span{font-size:10px}}
+.login-page{display:grid;grid-template-columns:1fr 1fr;min-height:100vh;background:#fff}
+.login-story{background:#eaf2e9;padding:55px 65px;display:flex;flex-direction:column;justify-content:space-between;gap:70px}
+.login-story h1{font-size:clamp(35px,4vw,60px);line-height:1.1;margin:20px 0;letter-spacing:-2px}
+.login-story>div>p:not(.eyebrow){font-size:17px;line-height:1.8;max-width:360px;color:#617a6b}
+.login-steps{display:flex;flex-direction:column;gap:20px;margin-top:45px;color:#4e705a;font-size:13px}
+.login-main{margin:0;padding:60px 35px;display:flex;align-items:center;justify-content:center}
+.login-card{width:100%;max-width:370px}
+.login-card h2{font-size:30px;margin:15px 0}
+.login-card>p:not(.eyebrow),.form-help{color:#7a8985;font-size:12px;line-height:1.7}
+.login-card form{margin:28px 0 20px}
+.login-submit{width:100%;margin-top:16px}
+.login-toggle{font-size:12px;text-align:center;border-top:1px solid #e5ebe7;padding:23px 0}
+.login-toggle button{border:0;background:transparent;color:#247b65;font-weight:600}
+#login-error{color:#984f46;background:#fff0ed;border-radius:6px;padding:12px;font-size:12px;line-height:1.6}
+@media(max-width:760px){.login-page{grid-template-columns:1fr}.login-story{padding:25px;gap:25px}.login-story h1{font-size:32px}.login-story .login-steps,.login-story>small{display:none}.login-story>div>p:not(.eyebrow){font-size:14px;margin-bottom:0}.login-main{padding:30px 25px}.sidebar-footer{display:flex;margin-top:15px;padding-top:12px}.sidebar-footer .avatar{padding:8px}}

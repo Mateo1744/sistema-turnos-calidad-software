@@ -12,7 +12,15 @@ class UsuarioServiceTest {
 
     @Test
     void creaUsuario() {
-        UsuarioService usuarioService = new UsuarioService();
+        var repository = org.mockito.Mockito.mock(
+                com.calidadsoftware.sistema_turnos.repository.UsuarioRepository.class);
+        org.mockito.Mockito.when(repository.saveAndFlush(org.mockito.ArgumentMatchers.any(Usuario.class)))
+                .thenAnswer(invocacion -> {
+                    Usuario guardado = invocacion.getArgument(0);
+                    guardado.setId(1L);
+                    return guardado;
+                });
+        UsuarioService usuarioService = new UsuarioService(repository);
         Usuario usuario = new Usuario(null, "Ana", "123456", TipoUsuario.NORMAL);
 
         Usuario usuarioCreado = usuarioService.registrar(usuario);

@@ -1,6 +1,5 @@
 package com.calidadsoftware.sistema_turnos.service;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -12,22 +11,30 @@ import com.calidadsoftware.sistema_turnos.entity.Usuario;
 @Service
 public class UsuarioService {
 
-    private final List<Usuario> usuarios = new ArrayList<>();
-    private long siguienteId = 1;
+    private final com.calidadsoftware.sistema_turnos.repository.UsuarioRepository usuarios;
+
+    public UsuarioService(com.calidadsoftware.sistema_turnos.repository.UsuarioRepository usuarios) {
+        this.usuarios = usuarios;
+    }
+
+    public List<Usuario> listar() { return usuarios.findAll(org.springframework.data.domain.Sort.by("id")); }
+
+    public Usuario buscarPorId(Long id) {
+        return usuarios.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Usuario no encontrado"));
+    }
 
     public Usuario registrar(Usuario usuario) {
         String documento = usuario.getDocumento().trim();
-        boolean documentoRegistrado = usuarios.stream()
-                .anyMatch(existente -> existente.getDocumento().equalsIgnoreCase(documento));
+        boolean documentoRegistrado = usuarios.existsByDocumentoIgnoreCase(documento);
 
         if (documentoRegistrado) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El documento ya está registrado");
         }
 
-        usuario.setId(siguienteId++);
+        usuario.setId(null);
         usuario.setNombre(usuario.getNombre().trim());
         usuario.setDocumento(documento);
-        usuarios.add(usuario);
-        return usuario;
+        return usuarios.saveAndFlush(usuario);
     }
 }

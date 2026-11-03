@@ -1,19 +1,34 @@
 package com.calidadsoftware.sistema_turnos.entity;
 
 import java.time.LocalDateTime;
+import jakarta.persistence.*;
 
 import com.calidadsoftware.sistema_turnos.enums.EstadoTurno;
 
+@Entity
+@Table(name = "turnos")
 public class Turno {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(unique = true)
     private String numero;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "usuario_id", nullable = false)
     private Usuario usuario;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "servicio_id", nullable = false)
     private Servicio servicio;
+    @ManyToOne
+    @JoinColumn(name = "funcionario_id")
     private Funcionario funcionario;
+    @Column(nullable = false)
     private LocalDateTime fechaCreacion;
     private LocalDateTime fechaInicio;
     private LocalDateTime fechaFinalizacion;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private EstadoTurno estado;
 
     public Turno() {
