@@ -1,0 +1,121 @@
+trigger: none
+pr: none
+
+pool:
+  name: LocalPool
+  demands:
+    - Agent.OS -equals Windows_NT
+
+variables:
+  appPort: '8081'
+  healthPath: '/api/auth/csrf'
+  springProfile: 'zap'
+  zapTarget: 'http://host.docker.internal:8081'
+
+steps:
+  - checkout: self
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $dir = Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'zap'
+      New-Item -Path $dir -ItemType Directory -Force | Out-Null
+      Write-Host "ZAP report directory: $dir"
+    displayName: '01 - Prepare report directory'
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      java -version
+      if ($LASTEXITCODE -ne 0) { throw 'Java is unavailable.' }
+      docker version
+      if ($LASTEXITCODE -ne 0) { throw 'Docker is unavailable.' }
+      $type = docker info --format '{{.OSType}}'
+      if ($LASTEXITCODE -ne 0 -or $type.Trim() -ne 'linux') {
+        throw 'Docker Desktop must run Linux containers.'
+      }
+      if (-not (Test-Path '.\gradlew.bat')) { throw 'gradlew.bat was not found.' }
+      if (-not (Test-Path '.\src\main\resources\application-zap.properties')) {
+        throw 'The isolated zap Spring profile is missing.'
+      }
+    workingDirectory: '$(Build.SourcesDirectory)'
+    displayName: '02 - Verify prerequisites'
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      .\gradlew.bat clean test bootJar --no-daemon
+      if ($LASTEXITCODE -ne 0) { throw 'Gradle tests or bootJar failed.' }
+    workingDirectory: '$(Build.SourcesDirectory)'
+    displayName: '03 - Test and package application'
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $jar = Get-ChildItem '.\build\libs' -Filter '*.jar' |
+        Where-Object { $_.Name -notlike '*-plain.jar' } |
+        Sort-Object LastWriteTime -Descending |
+        Select-Object -First 1
+      if (-not $jar) { throw 'Executable Spring Boot JAR was not found.' }
+      $dir = Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'zap'
+      $out = Join-Path $dir 'application-output.log'
+      $err = Join-Path $dir 'application-error.log'
+      $env:DB_URL = 'jdbc:h2:mem:zapdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1'
+      $env:DB_USERNAME = 'sa'
+      $env:DB_PASSWORD = ''
+      $env:ADMIN_USERNAME = ''
+      $env:ADMIN_PASSWORD = ''
+      $args = '-jar "' + $jar.FullName + '" --server.port=$(appPort) --spring.profiles.active=$(springProfile)'
+      $proc = Start-Process -FilePath 'java.exe' -ArgumentList $args -PassThru `
+        -RedirectStandardOutput $out -RedirectStandardError $err
+      Write-Host "##vso[task.setvariable variable=AppPid]$($proc.Id)"
+      $url = 'http://127.0.0.1:$(appPort)$(healthPath)'
+      $ready = $false
+      for ($i = 1; $i -le 40; $i++) {
+        $proc.Refresh()
+        if ($proc.HasExited) { break }
+        try {
+          $response = Invoke-WebRequest -Uri $url -UseBasicParsing -TimeoutSec 3
+          if ($response.StatusCode -ge 200 -and $response.StatusCode -lt 300) {
+            $ready = $true
+            break
+          }
+        } catch { Start-Sleep -Seconds 3 }
+      }
+      if (-not $ready) {
+        Get-Content $err -Tail 40 -ErrorAction SilentlyContinue
+        throw "Application did not respond successfully at $url"
+      }
+      Write-Host "Application ready at $url"
+    workingDirectory: '$(Build.SourcesDirectory)'
+    displayName: '04 - Start isolated application'
+
+  - powershell: |
+      $ErrorActionPreference = 'Stop'
+      $dir = Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'zap'
+      $mount = "${dir}:/zap/wrk:rw"
+      docker run --rm -v "$mount" ghcr.io/zaproxy/zaproxy:stable `
+        zap-baseline.py -t '$(zapTarget)' -m 2 `
+        -r reporte-zap.html -J reporte-zap.json -I
+      $zapExit = $LASTEXITCODE
+      if (-not (Test-Path (Join-Path $dir 'reporte-zap.html'))) {
+        throw "ZAP did not produce reporte-zap.html (exit $zapExit)."
+      }
+      if (-not (Test-Path (Join-Path $dir 'reporte-zap.json'))) {
+        throw "ZAP did not produce reporte-zap.json (exit $zapExit)."
+      }
+      if ($zapExit -notin @(0, 1, 2)) { throw "ZAP operational failure: $zapExit" }
+      Write-Host "ZAP completed with exit code $zapExit; alerts are informational."
+    displayName: '05 - Run OWASP ZAP Baseline'
+
+  - task: PublishPipelineArtifact@1
+    displayName: '06 - Publish ZAP evidence'
+    condition: succeededOrFailed()
+    inputs:
+      targetPath: '$(Build.ArtifactStagingDirectory)/zap'
+      artifact: 'reporte-seguridad-zap'
+      publishLocation: 'pipeline'
+
+  - powershell: |
+      $processId = '$(AppPid)'
+      if ($processId -match '^\d+$') {
+        Stop-Process -Id ([int]$processId) -Force -ErrorAction SilentlyContinue
+      }
+    condition: always()
+    displayName: '07 - Stop laboratory application'
