@@ -1,0 +1,66 @@
+# Extension de ET0202: conserva Baseline y agrega consultas autenticadas por rol.
+trigger: none
+pr: none
+
+pool:
+  name: LocalPool
+  demands:
+    - Agent.OS -equals Windows_NT
+
+variables:
+  appPort: '8081'
+
+jobs:
+  - job: SeguridadZAP
+    timeoutInMinutes: 25
+    cancelTimeoutInMinutes: 3
+    steps:
+      - checkout: self
+
+      - powershell: |
+          New-Item -ItemType Directory -Force '$(Build.ArtifactStagingDirectory)/zap-ampliado' | Out-Null
+        displayName: '01 - Preparar evidencias'
+
+      - powershell: |
+          $ErrorActionPreference = 'Stop'
+          java -version
+          if ($LASTEXITCODE -ne 0) { throw 'Java no disponible.' }
+          $type = docker info --format '{{.OSType}}'
+          if ($LASTEXITCODE -ne 0 -or $type.Trim() -ne 'linux') { throw 'Docker Linux no disponible.' }
+          if (-not (Test-Path 'src/main/resources/application-zap.properties')) { throw 'Falta el perfil zap.' }
+        workingDirectory: '$(Build.SourcesDirectory)'
+        displayName: '02 - Verificar requisitos'
+
+      - powershell: |
+          .\gradlew.bat clean test bootJar --no-daemon
+          if ($LASTEXITCODE -ne 0) { throw 'Fallo Gradle.' }
+        workingDirectory: '$(Build.SourcesDirectory)'
+        displayName: '03 - Pruebas y compilacion'
+
+      - task: PowerShell@2
+        displayName: '04 - Iniciar H2, Baseline, revision autenticada y detener laboratorio'
+        inputs:
+          targetType: filePath
+          filePath: '$(Build.SourcesDirectory)/scripts/zap/Invoke-ZapAuthenticated.ps1'
+          arguments: '-AppPort $(appPort) -ReportDirectory "$(Build.ArtifactStagingDirectory)/zap-ampliado"'
+          workingDirectory: '$(Build.SourcesDirectory)'
+        env:
+          BUILD_ID: $(Build.BuildId)
+          BUILD_COMMIT: $(Build.SourceVersion)
+          BUILD_URL: $(System.CollectionUri)$(System.TeamProject)/_build/results?buildId=$(Build.BuildId)
+
+      - task: PublishTestResults@2
+        condition: succeededOrFailed()
+        displayName: '05 - Publicar resultados de pruebas'
+        inputs:
+          testResultsFormat: JUnit
+          testResultsFiles: '**/build/test-results/test/TEST-*.xml'
+          failTaskOnFailedTests: true
+
+      - task: PublishPipelineArtifact@1
+        condition: succeededOrFailed()
+        displayName: '06 - Publicar HTML, JSON y cobertura por rol'
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)/zap-ampliado'
+          artifact: 'reporte-seguridad-zap-ampliado'
+          publishLocation: pipeline
