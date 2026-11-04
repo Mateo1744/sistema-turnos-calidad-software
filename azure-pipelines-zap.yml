@@ -54,8 +54,8 @@ steps:
         Select-Object -First 1
       if (-not $jar) { throw 'Executable Spring Boot JAR was not found.' }
       $dir = Join-Path $env:BUILD_ARTIFACTSTAGINGDIRECTORY 'zap'
-      $out = Join-Path $dir 'application-output.log'
-      $err = Join-Path $dir 'application-error.log'
+      $out = Join-Path $env:TEMP 'zap-application-output.log'
+      $err = Join-Path $env:TEMP 'zap-application-error.log'
       $env:DB_URL = 'jdbc:h2:mem:zapdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1'
       $env:DB_USERNAME = 'sa'
       $env:DB_PASSWORD = ''
