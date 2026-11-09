@@ -104,6 +104,15 @@ tasks.named<BootRun>("bootRun") {
     doFirst { cargarConexionLocal() }
 }
 
+// Servidor real y base efímera exclusivos de las pruebas de navegador.
+tasks.register<JavaExec>("bootRunE2e") {
+    group = "application"
+    description = "Inicia la aplicación E2E en localhost:8081 con H2 temporal."
+    classpath = sourceSets["main"].runtimeClasspath
+    mainClass.set("com.calidadsoftware.sistema_turnos.SistemaTurnosApplication")
+    args("--spring.profiles.active=e2e")
+}
+
 tasks.register<JavaExec>("restablecerAdmin") {
     group = "application"
     description = "Restablece localmente la contraseña de una cuenta administradora existente."
@@ -142,10 +151,9 @@ sonar {
             "Sistema de Turnos"
         )
 
-        property(
-            "sonar.login", 
-            "sqp_52b521d8e18db47ccc1adcf2726e0fbe1fd0f141"
-        )
+        System.getenv("SONAR_TOKEN")?.takeIf { it.isNotBlank() }?.let {
+            property("sonar.token", it)
+        }
 
         property(
             "sonar.host.url", 
@@ -157,7 +165,7 @@ sonar {
 pitest {
     pitestVersion.set("1.19.0")
     junit5PluginVersion.set("1.2.1")
-    targetClasses.set(listOf("com.calidadsoftware.sistema_turnos.*")) // <--- cambia aquí targetTests.set(listOf("org.example.*"))
+    targetClasses.set(listOf("com.calidadsoftware.sistema_turnos.*"))
     threads.set(4)
     outputFormats.set(listOf("HTML"))
     timestampedReports.set(false)

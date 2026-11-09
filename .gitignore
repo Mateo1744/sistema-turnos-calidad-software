@@ -35,3 +35,11 @@ build/
 
 ### Conexión local cifrada de Windows ###
 .local/
+
+### Archivos temporales de revisión ###
+.docx-review/
+
+### Entregables externos al código ###
+/entrega-e2e/
+/entrega-zap/
+*.mp4

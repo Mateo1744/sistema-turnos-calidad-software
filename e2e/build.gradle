@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+repositories { mavenCentral() }
+dependencies {
+    testImplementation 'net.serenity-bdd:serenity-core:3.9.8'
+    testImplementation 'net.serenity-bdd:serenity-cucumber:3.9.8'
+    testImplementation 'io.cucumber:cucumber-java:7.13.0'
+    testImplementation 'io.cucumber:cucumber-junit:7.13.0'
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'io.github.bonigarcia:webdrivermanager:5.8.0'
+}
+test {
+    useJUnit()
+    // Ejecutar de nuevo aunque el código no cambie: el estado del navegador es externo.
+    outputs.upToDateWhen { false }
+    systemProperty 'webdriver.base.url', 'http://127.0.0.1:8081'
+    systemProperty 'headless.mode', System.getProperty('headless.mode', 'false')
+    testLogging { events 'passed', 'failed', 'skipped'; exceptionFormat 'full' }
+}

@@ -48,7 +48,7 @@ Si se usa Atrás, el panel vuelve a comprobar el acceso.
 ## Restablecer un administrador
 
 Si la consulta SELECT id, username, rol FROM cuentas WHERE rol = 'ADMIN'
-confirma que existe la cuenta y no recuerdas su contraseña, detener la aplicación
+confirma que existe la cuenta y se requiere restablecer su contraseña, detener la aplicación
 y ejecutar desde la raíz:
 
 ~~~powershell
@@ -56,7 +56,7 @@ powershell -ExecutionPolicy Bypass -File .\scripts\restablecer-admin.ps1
 ~~~
 
 Introducir el username de pgAdmin y la nueva contraseña dos veces. Se usa la
-conexión cifrada que ya guardaste para bootRun. La herramienta actualiza solo
+conexión cifrada configurada para bootRun. La herramienta actualiza solo
 una cuenta ADMIN existente, conserva su id y no crea otra cuenta.
 No guarda contraseñas nuevas en archivos ni las pasa como argumentos de comandos.
 Las sesiones que contenían el hash anterior se invalidan en su siguiente petición.
