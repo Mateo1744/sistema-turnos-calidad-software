@@ -18,8 +18,8 @@ public class AccesoTurnos {
         return auth != null && auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
     }
     public Funcionario funcionario() {
-        var principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (!(principal instanceof CuentaPrincipal cuenta) || cuenta.funcionarioId() == null) {
+        var auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof CuentaPrincipal cuenta) || cuenta.funcionarioId() == null) {
             throw new AccessDeniedException("No tienes un funcionario asociado");
         }
         var funcionario = funcionarios.buscarPorId(cuenta.funcionarioId());

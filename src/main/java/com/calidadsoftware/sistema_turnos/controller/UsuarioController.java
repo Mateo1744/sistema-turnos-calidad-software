@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.calidadsoftware.sistema_turnos.dto.CrearUsuarioRequest;
 import com.calidadsoftware.sistema_turnos.entity.Usuario;
 import com.calidadsoftware.sistema_turnos.service.UsuarioService;
 
@@ -23,7 +24,8 @@ public class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> registrar(@Valid @RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> registrar(@Valid @RequestBody CrearUsuarioRequest solicitud) {
+        var usuario = new Usuario(null, solicitud.nombre(), solicitud.documento(), solicitud.tipoUsuario());
         Usuario registrado = usuarioService.registrar(usuario);
         return ResponseEntity.status(HttpStatus.CREATED).body(registrado);
     }

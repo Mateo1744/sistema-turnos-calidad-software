@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.calidadsoftware.sistema_turnos.dto.CrearServicioRequest;
 import com.calidadsoftware.sistema_turnos.entity.Servicio;
 import com.calidadsoftware.sistema_turnos.service.ServicioService;
 
@@ -26,7 +27,8 @@ public class ServicioController {
     }
 
     @PostMapping
-    public ResponseEntity<Servicio> registrar(@Valid @RequestBody Servicio servicio) {
+    public ResponseEntity<Servicio> registrar(@Valid @RequestBody CrearServicioRequest solicitud) {
+        var servicio = new Servicio(null, solicitud.nombre(), solicitud.descripcion(), solicitud.estado());
         Servicio registrado = servicioService.registrar(servicio);
         return ResponseEntity.status(HttpStatus.CREATED).body(registrado);
     }

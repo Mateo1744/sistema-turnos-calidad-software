@@ -33,48 +33,52 @@ class AtencionServiceTest {
     @Test
     void completaCicloYPermiteNuevoTurno() {
         var t = turnos.crear(1L, 1L);
-        turnos.ponerEnEspera(t.getId());
-        turnos.llamar(t.getId(), 1L);
+        var turnoId = t.getId();
+        turnos.ponerEnEspera(turnoId);
+        turnos.llamar(turnoId, 1L);
         assertEquals(EstadoTurno.LLAMADO, t.getEstado());
-        turnos.iniciar(t.getId());
+        turnos.iniciar(turnoId);
         assertNotNull(t.getFechaInicio());
-        turnos.finalizar(t.getId());
+        turnos.finalizar(turnoId);
         assertEquals(EstadoTurno.FINALIZADO, t.getEstado());
         assertFalse(t.getFechaFinalizacion().isBefore(t.getFechaInicio()));
         assertEquals(1, turnos.porFuncionario(1L).size());
         assertTrue(turnos.pendientes().isEmpty());
         assertNotEquals(t.getNumero(), turnos.crear(1L, 1L).getNumero());
-        assertThrows(ResponseStatusException.class, () -> turnos.iniciar(t.getId()));
-        assertThrows(ResponseStatusException.class, () -> turnos.cancelar(t.getId()));
+        assertThrows(ResponseStatusException.class, () -> turnos.iniciar(turnoId));
+        assertThrows(ResponseStatusException.class, () -> turnos.cancelar(turnoId));
     }
 
     @Test
     void respetaPrioridadYReservaFuncionario() {
         var normal = turnos.crear(1L, 1L);
+        var normalId = normal.getId();
         var prioritario = turnos.crear(2L, 1L);
-        turnos.ponerEnEspera(normal.getId());
-        turnos.ponerEnEspera(prioritario.getId());
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(normal.getId(), 1L));
-        turnos.llamar(prioritario.getId(), 1L);
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(normal.getId(), 1L));
-        turnos.iniciar(prioritario.getId());
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(normal.getId(), 1L));
-        turnos.finalizar(prioritario.getId());
-        assertDoesNotThrow(() -> turnos.llamar(normal.getId(), 1L));
+        var prioritarioId = prioritario.getId();
+        turnos.ponerEnEspera(normalId);
+        turnos.ponerEnEspera(prioritarioId);
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(normalId, 1L));
+        turnos.llamar(prioritarioId, 1L);
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(normalId, 1L));
+        turnos.iniciar(prioritarioId);
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(normalId, 1L));
+        turnos.finalizar(prioritarioId);
+        assertDoesNotThrow(() -> turnos.llamar(normalId, 1L));
     }
 
     @Test
     void rechazaSaltosYTurnosCancelados() {
         var t = turnos.crear(1L, 1L);
-        assertThrows(ResponseStatusException.class, () -> turnos.finalizar(t.getId()));
-        assertThrows(ResponseStatusException.class, () -> turnos.iniciar(t.getId()));
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(t.getId(), 1L));
-        turnos.ponerEnEspera(t.getId());
-        assertThrows(ResponseStatusException.class, () -> turnos.finalizar(t.getId()));
-        turnos.cancelar(t.getId());
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(t.getId(), 1L));
-        assertThrows(ResponseStatusException.class, () -> turnos.iniciar(t.getId()));
-        assertThrows(ResponseStatusException.class, () -> turnos.ponerEnEspera(t.getId()));
+        var turnoId = t.getId();
+        assertThrows(ResponseStatusException.class, () -> turnos.finalizar(turnoId));
+        assertThrows(ResponseStatusException.class, () -> turnos.iniciar(turnoId));
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(turnoId, 1L));
+        turnos.ponerEnEspera(turnoId);
+        assertThrows(ResponseStatusException.class, () -> turnos.finalizar(turnoId));
+        turnos.cancelar(turnoId);
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(turnoId, 1L));
+        assertThrows(ResponseStatusException.class, () -> turnos.iniciar(turnoId));
+        assertThrows(ResponseStatusException.class, () -> turnos.ponerEnEspera(turnoId));
         assertDoesNotThrow(() -> turnos.crear(1L, 1L));
     }
 
@@ -83,9 +87,10 @@ class AtencionServiceTest {
         servicios.registrar(new Servicio(null, "Soporte", "Ayuda", "ACTIVO"));
         funcionarios.registrar("Pedro", 2L);
         var t = turnos.crear(1L, 1L);
-        turnos.ponerEnEspera(t.getId());
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(t.getId(), 2L));
-        assertThrows(ResponseStatusException.class, () -> turnos.llamar(t.getId(), 99L));
+        var turnoId = t.getId();
+        turnos.ponerEnEspera(turnoId);
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(turnoId, 2L));
+        assertThrows(ResponseStatusException.class, () -> turnos.llamar(turnoId, 99L));
         assertEquals(EstadoTurno.EN_ESPERA, t.getEstado());
     }
 }

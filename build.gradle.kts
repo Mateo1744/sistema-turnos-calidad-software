@@ -3,6 +3,7 @@ import org.springframework.boot.gradle.tasks.run.BootRun
 
 plugins {
     java
+    jacoco
     id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
     id("org.sonarqube") version "6.2.0.5505"
@@ -37,23 +38,18 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-security")
-    testImplementation("org.springframework.security:spring-security-test")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
-    runtimeOnly("org.postgresql:postgresql")
-    runtimeOnly("com.h2database:h2")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
 
+    runtimeOnly("org.postgresql:postgresql")
+    runtimeOnly("com.h2database:h2")
+
+    testImplementation("org.springframework.security:spring-security-test")
     testImplementation("org.springframework.boot:spring-boot-starter-validation-test")
     testImplementation("org.springframework.boot:spring-boot-starter-webmvc-test")
-    
-
-        // PIT Mutation Testing
-    pitest ("org.pitest:pitest-junit5-plugin:1.19.0")
-
-    // Cucumber
-    testImplementation("io.cucumber:cucumber-java:7.34.8")
-    testImplementation("io.cucumber:cucumber-junit-platform-engine:7.34.8")
+    testImplementation(libs.cucumber.java)
+    testImplementation(libs.cucumber.junit.platform.engine)
     testImplementation("org.junit.platform:junit-platform-suite")
 }
 
@@ -70,7 +66,7 @@ configurations.named("testRuntimeClasspath") {
 
 tasks.test {
     systemProperty("spring.profiles.active", "test")
-    useJUnitPlatform()
+    useJUnitPlatform { includeEngines("junit-jupiter", "junit-platform-suite") }
 }
 
 fun JavaExec.cargarConexionLocal() {
@@ -133,10 +129,19 @@ tasks.register<Test>("acceptanceTest") {
     classpath = sourceSets["test"].runtimeClasspath
 
     useJUnitPlatform {
-        includeEngines("cucumber")
+        includeEngines("junit-platform-suite")
     }
 }
 
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+    reports { xml.required.set(true) }
+}
+
+tasks.named("sonar") {
+    dependsOn(tasks.jacocoTestReport)
+}
 
 sonar {
     properties {
@@ -167,6 +172,8 @@ pitest {
     junit5PluginVersion.set("1.2.1")
     targetClasses.set(listOf("com.calidadsoftware.sistema_turnos.*"))
     threads.set(4)
-    outputFormats.set(listOf("HTML"))
+    // Las pruebas de integración arrancan Spring y H2 en las JVM de PIT.
+    timeoutConstInMillis.set(30_000)
+    outputFormats.set(listOf("HTML", "XML"))
     timestampedReports.set(false)
 }

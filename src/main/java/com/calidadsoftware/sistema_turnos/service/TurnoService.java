@@ -1,6 +1,7 @@
 package com.calidadsoftware.sistema_turnos.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,7 +42,7 @@ public class TurnoService {
                     "El usuario ya tiene un turno activo para este servicio");
         }
         Turno turno = new Turno(null, null,
-                usuario, servicio, null, LocalDateTime.now(), null, null, EstadoTurno.GENERADO);
+                usuario, servicio, null, LocalDateTime.now(ZoneId.systemDefault()), null, null, EstadoTurno.GENERADO);
         turnos.saveAndFlush(turno);
         turno.setNumero(String.format(Locale.ROOT, "T%03d", turno.getId()));
         turnos.saveAndFlush(turno);
@@ -116,7 +117,7 @@ public class TurnoService {
     public synchronized Turno iniciar(Long id) {
         var turno = buscarPorId(id);
         exigirEstado(turno, EstadoTurno.LLAMADO);
-        turno.setFechaInicio(LocalDateTime.now());
+        turno.setFechaInicio(LocalDateTime.now(ZoneId.systemDefault()));
         turno.setEstado(EstadoTurno.EN_ATENCION);
         return turno;
     }
@@ -124,7 +125,7 @@ public class TurnoService {
     public synchronized Turno finalizar(Long id) {
         var turno = buscarPorId(id);
         exigirEstado(turno, EstadoTurno.EN_ATENCION);
-        var ahora = LocalDateTime.now();
+        var ahora = LocalDateTime.now(ZoneId.systemDefault());
         if (ahora.isBefore(turno.getFechaInicio())) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Fecha de finalización anterior al inicio");
         }

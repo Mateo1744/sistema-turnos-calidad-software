@@ -36,7 +36,9 @@ class SeguridadIntegrationTests {
     private MockHttpSession login(String username) throws Exception {
         return (MockHttpSession) mvc.perform(post("/api/auth/login").with(csrf())
                 .param("username", username).param("password", CLAVE))
-                .andExpect(status().isOk()).andReturn().getRequest().getSession(false);
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.ok").value(true)).andReturn().getRequest().getSession(false);
     }
 
     @Test
@@ -69,7 +71,9 @@ class SeguridadIntegrationTests {
     @Test
     void aceptaTokenRealDelNavegadorYRenuevaSesion() throws Exception {
         cuentas.crearAdministradorInicial("admin-test", CLAVE);
-        var tokenResult = mvc.perform(get("/api/auth/csrf")).andExpect(status().isOk()).andReturn();
+        var tokenResult = mvc.perform(get("/api/auth/csrf")).andExpect(status().isOk())
+                .andExpect(jsonPath("$.token", not(emptyOrNullString())))
+                .andExpect(jsonPath("$.headerName", not(emptyOrNullString()))).andReturn();
         var session = (MockHttpSession)tokenResult.getRequest().getSession(false);
         var token = (org.springframework.security.web.csrf.CsrfToken)
                 tokenResult.getRequest().getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
@@ -91,9 +95,13 @@ class SeguridadIntegrationTests {
         var hash = repository.findByUsername("admin-test").orElseThrow().getPasswordHash();
         assertNotEquals(CLAVE, hash);
         assertTrue(encoder.matches(CLAVE, hash));
-        mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/auth/me")).andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.detail").value("Inicia sesión para continuar"));
         mvc.perform(post("/api/auth/login").with(csrf()).param("username","admin-test")
-                .param("password","incorrecta")).andExpect(status().isUnauthorized());
+                .param("password","incorrecta")).andExpect(status().isUnauthorized())
+                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$.detail").value("Usuario o contraseña incorrectos"));
         var session = login("admin-test");
         mvc.perform(get("/api/auth/me").session(session)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.rol").value("ADMIN"))
@@ -120,7 +128,9 @@ class SeguridadIntegrationTests {
         mvc.perform(get("/api/auth/me").session(session)).andExpect(status().isOk())
                 .andExpect(jsonPath("$.rol").value("USUARIO"));
         for (String path : new String[]{"/usuarios","/turnos","/funcionarios","/api/admin/cuentas"}) {
-            mvc.perform(get(path).session(session)).andExpect(status().isForbidden());
+            mvc.perform(get(path).session(session)).andExpect(status().isForbidden())
+                    .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
+                    .andExpect(jsonPath("$.detail").value("No tienes permiso o falta un token CSRF válido"));
         }
         mvc.perform(post("/servicios").session(session).with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)

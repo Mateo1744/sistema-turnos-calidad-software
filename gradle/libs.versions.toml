@@ -1,0 +1,6 @@
+[versions]
+cucumber = "7.34.8"
+
+[libraries]
+cucumber-java = { module = "io.cucumber:cucumber-java", version.ref = "cucumber" }
+cucumber-junit-platform-engine = { module = "io.cucumber:cucumber-junit-platform-engine", version.ref = "cucumber" }
